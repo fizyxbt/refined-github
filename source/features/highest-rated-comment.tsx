@@ -15,10 +15,6 @@ import {singleParagraphCommentSelector} from './hide-low-quality-comments.js';
 
 // `.js-timeline-item` gets the nearest comment excluding the very first comment (OP post)
 const commentSelector = '.js-timeline-item, .react-issue-comment';
-const commentBodySelector = '.comment-body, [data-testid="markdown-body"]';
-const commentHeaderSelector = '.unminimized-comment .timeline-comment-header > h3, [data-testid="comment-header"] [data-testid="avatar-link"]';
-const commentLinkSelector = 'a.js-timestamp, [data-testid="comment-header"] a[href*="#issuecomment-"]';
-const commentAvatarSelector = 'img.avatar, img[data-testid="github-avatar"]';
 
 const positiveReactionsSelector = `
 	${commentSelector} [aria-label="react with thumbs up"],
@@ -71,7 +67,10 @@ function highlightBestComment(bestComment: Element): void {
 	}
 
 	bestComment.classList.toggle('rgh-highest-rated-comment', bestComment.matches('.react-issue-comment'));
-	$(commentHeaderSelector, bestComment).before(
+	$([
+		'.unminimized-comment .timeline-comment-header > h3',
+		'[data-testid="comment-header"] [data-testid="avatar-link"]', // React issue comments
+	], bestComment).before(
 		tooltipped(
 			'This comment has the most positive reactions on this issue.',
 			<span className="color-fg-success">
@@ -90,9 +89,18 @@ function linkBestComment(bestComment: HTMLElement): void {
 		return;
 	}
 
-	const text = $(commentBodySelector, bestComment).textContent.slice(0, 100);
-	const {hash} = $(commentLinkSelector, bestComment);
-	const avatar = $(commentAvatarSelector, bestComment).cloneNode();
+	const text = $([
+		'.comment-body',
+		'[data-testid="markdown-body"]', // React issue comments
+	], bestComment).textContent.slice(0, 100);
+	const {hash} = $([
+		'a.js-timestamp',
+		'[data-testid="comment-header"] a[href*="#issuecomment-"]', // React issue comments
+	], bestComment);
+	const avatar = $([
+		'img.avatar',
+		'img[data-testid="github-avatar"]', // React issue comments
+	], bestComment).cloneNode();
 	const anchor = (
 		<a
 			href={hash}
